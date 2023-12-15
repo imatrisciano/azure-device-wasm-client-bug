@@ -1,0 +1,50 @@
+﻿@page "/"
+@using Microsoft.Azure.Devices.Client
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<p>@status</p>
+
+@code
+{
+	private const string primaryConnectionString = "";
+	string status = "";
+
+    protected override async Task OnInitializedAsync() 
+    {
+        await base.OnInitializedAsync();
+
+		if (String.IsNullOrEmpty(primaryConnectionString))
+		{
+			status = "Please provide a connection string";
+			return;
+		}
+
+		status = "Connecting...";
+		try
+		{
+			await ConnectClient();
+			status = "Connection successfull";
+		}
+		catch(Exception exc)
+		{
+			status = $"Connection failed: {exc.Message}";
+			throw exc;
+
+		}
+
+    }
+
+    async Task ConnectClient()
+    {
+        DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(primaryConnectionString, TransportType.Mqtt_WebSocket_Only);
+
+		var message = new Message(System.Text.Encoding.ASCII.GetBytes("Hello world"));
+		// Send the tlemetry message
+		await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+	}
+}
